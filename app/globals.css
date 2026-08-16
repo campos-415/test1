@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Defaults for the themeable palette. SettingsProvider overwrites these on
+   <html> from the saved settings; they're here so the app renders correctly
+   before settings load, and so a fresh install looks finished. Values are
+   space-separated RGB triples, which is what rgb(var(--x) / alpha) needs. */
+:root {
+  --accent-50: 238 244 255;
+  --accent-100: 219 230 254;
+  --accent-200: 204 216 251;
+  --accent-300: 170 189 247;
+  --accent-400: 122 156 247;
+  --accent-500: 74 114 239;
+  --accent-600: 52 87 221;
+  --accent-700: 42 68 179;
+  --accent-800: 38 59 124;
+
+  --accent-ink: 255 255 255;
+
+  --print-from: 245 158 11;
+  --print-to: 249 115 22;
+  --print-line: 253 230 138;
+  --print-rule: 252 211 77;
+  --print-tint: 255 247 237;
+  --print-band: 254 243 199;
+  --print-ink: 180 83 9;
+
+  /* Semantic surface/ink tokens. Components reference these by role rather
+     than by hue, which is what makes one dark-mode override below flip the
+     whole app instead of needing a `dark:` variant on every element. */
+  --surface: 255 255 255;      /* cards, panels */
+  --surface-2: 248 250 252;    /* page background */
+  --surface-3: 241 245 249;    /* subtle fills, group bands */
+  --line: 226 232 240;         /* standard borders */
+  --line-soft: 241 245 249;    /* hairline dividers */
+  --ink: 15 23 42;             /* primary text */
+  --ink-2: 71 85 105;          /* secondary text */
+  --ink-3: 148 163 184;        /* muted text, placeholders */
+
+  /* Tells the browser to render native widgets — date pickers, scrollbars,
+     spinners — in the matching scheme. Without it a native calendar stays
+     blinding white on a dark page no matter what the input is styled as. */
+  color-scheme: light;
+}
+
+.dark {
+  --surface: 30 41 59;
+  --surface-2: 15 23 42;
+  --surface-3: 51 65 85;
+  --line: 51 65 85;
+  --line-soft: 40 52 71;
+  --ink: 241 245 249;
+  --ink-2: 203 213 225;
+  --ink-3: 148 163 184;
+  color-scheme: dark;
+}
+
+html,
+body {
+  @apply bg-surface-2 text-ink;
+}
+
+/* Dropdowns.
+
+   Every select in the app carried our border, background and font but not
+   `appearance: none`, so the browser drew its own control inside them —
+   system chevron, system inset shadow, system font metrics. Against our own
+   inputs and pills that reads as unstyled, and it differs on every platform.
+
+   Done here as one element rule rather than a class on nineteen selects, so
+   the next one somebody writes is right without being told. `:not([multiple])`
+   is not decoration: it lifts the specificity to 0,1,1 so this beats the
+   Tailwind padding utilities the selects already carry, which is what
+   guarantees room for the chevron instead of text running underneath it.
+   A list box is left alone — it has no chevron and needs no room. */
+select:not([multiple]) {
+  appearance: none;
+  -webkit-appearance: none;
+  /* Inline SVG, because a background image cannot take `currentColor`. The
+     dark variant below is the same chevron in a lighter ink. */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2364748B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 0.85rem;
+  padding-right: 1.9rem;
+}
+
+.dark select:not([multiple]) {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394A3B8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* On paper a dropdown is a value, not a control. */
+@media print {
+  select:not([multiple]) {
+    background-image: none;
+    padding-right: 0;
+  }
+}
+
+.sig-canvas {
+  touch-action: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   Checkboxes are 16px, and a thumb is not.
+
+   Every checkbox in this app sits inside a label, so the label is what gets
+   tapped rather than the box - which is the right shape already. What it was
+   missing is height: a one-line label like "I understand the meet and greet
+   policy" came to 20px, and a miss on that one is a client who cannot submit
+   an enrollment and does not know why.
+
+   Done here rather than on each label because there are fifteen of them
+   across the forms and settings, and the sixteenth would have been written
+   without it. Below sm only: a mouse can hit 20px.
+   --------------------------------------------------------------------- */
+label:has(> input[type="checkbox"]) {
+  cursor: pointer;
+}
+
+@media (max-width: 639px) {
+  label:has(> input[type="checkbox"]) {
+    min-height: 44px;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Phones: a table stops being a table.
+
+   The sign-in list is eight columns wide. On a phone that is a sideways
+   scroll through a grid with the headers off-screen, so a staff member
+   reading a time cannot see which dog it belongs to - the one thing the
+   row exists to say.
+
+   Below sm each row becomes a card, and the cells lay out in a two-column
+   grid in the order the DOM already has them: the dog across the top, then
+   status beside owner, in beside out, add-ons across, package beside price.
+   Each cell grows its own label from data-label, because the header row it
+   used to rely on is gone.
+
+   This reflows the real cells rather than rendering a second mobile-only
+   list. Everything the row can already do - inline editing, the note and
+   meal buttons, the package pickers, the unpaid colouring - keeps working,
+   and there is no second copy to drift out of step.
+   --------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .table-cards,
+  .table-cards tbody,
+  .table-cards tr,
+  .table-cards td {
+    display: block;
+    width: auto;
+  }
+
+  /* Several of these tables carry a min-w-[26rem] or wider, put there to keep
+     the columns readable while the container scrolls sideways. That is the
+     behaviour being replaced, and left alone it holds the card open past the
+     edge of the screen. Typed as table.table-cards so it outranks the utility
+     class without needing !important. */
+  table.table-cards {
+    min-width: 0;
+  }
+
+  /* The headers move into the cells themselves. */
+  .table-cards thead {
+    display: none;
+  }
+
+  .table-cards tr {
+    display: grid;
+    /* minmax(0, 1fr) rather than 1fr. A plain 1fr is minmax(auto, 1fr), and
+       auto refuses to go below the content minimum - so one date input with
+       an intrinsic width of 160px held each column open at 190px and pushed
+       the table past the screen it was meant to fit. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* Row gap is the larger of the two on purpose. Each cell is a label above
+       its value, so the gap between rows separates whole facts while the
+       column gap only separates two of them side by side. Equal gaps made
+       the label of one row look attached to the value of the row above. */
+    gap: 0.875rem 0.75rem;
+    padding: 0.875rem;
+  }
+
+  /* A cell centred or right-aligned to sit under a column heading is not
+     centred under its own label. Left, unless it is deliberately the number
+     in the corner of the card. */
+  .table-cards td {
+    text-align: left;
+  }
+
+  .table-cards td[data-align="right"] {
+    text-align: right;
+  }
+
+  /* Controls were given widths that suited a column - a date field is w-40,
+     which is wider than half a phone. Capping the field itself is not enough
+     because the wrapper around it carries the width, so cap everything: a
+     max-width of 100% costs nothing to something already narrower. */
+  .table-cards td * {
+    max-width: 100%;
+  }
+
+  .table-cards td {
+    padding: 0;
+    /* Cells were sized to sit in a column and several refuse to wrap. In a
+       card the width is the screen, so they must. */
+    white-space: normal;
+    min-width: 0;
+  }
+
+  .table-cards td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.125rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-3));
+  }
+
+  /* The dog, the add-ons and the service band run the full width. */
+  .table-cards td[data-span="2"] {
+    grid-column: 1 / -1;
+  }
+
+  /* The card edge carries the still-here tint, so it needs to be visible
+     rather than collapsed against the one below it. */
+  .table-cards tr + tr {
+    margin-top: 0.5rem;
+  }
+}
+
+@media print {
+  /* Paper is always light. Reset the tokens rather than fighting each rule,
+     so a dark-mode screen still prints a readable black-on-white report. */
+  :root,
+  .dark {
+    --surface: 255 255 255;
+    --surface-2: 255 255 255;
+    --surface-3: 241 245 249;
+    --line: 226 232 240;
+    --line-soft: 241 245 249;
+    --ink: 15 23 42;
+    --ink-2: 71 85 105;
+    --ink-3: 100 116 139;
+  }
+  html,
+  body {
+    background: white !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}

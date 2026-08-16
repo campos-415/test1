@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Paw mark">
+  <!--
+    The logo a deployment falls back to until the business uploads its own,
+    under Settings -> Brand. Deliberately a plain paw mark and nothing else:
+    it stands in for every daycare that runs this app, so it must not carry
+    anyone name, street or colours beyond the default accent.
+  -->
+  <g fill="#4a72ef">
+    <ellipse cx="30" cy="56" rx="15" ry="19" transform="rotate(-20 30 56)" />
+    <ellipse cx="55" cy="37" rx="16" ry="21" transform="rotate(-7 55 37)" />
+    <ellipse cx="84" cy="39" rx="16" ry="21" transform="rotate(9 84 39)" />
+    <ellipse cx="107" cy="60" rx="15" ry="19" transform="rotate(22 107 60)" />
+    <path d="M64 63c14 0 27 9 30 21 3 12-6 22-19 22-5 0-8-2-11-2s-6 2-11 2c-13 0-22-10-19-22 3-12 16-21 30-21z" />
+  </g>
+</svg>

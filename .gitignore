@@ -1,0 +1,33 @@
+node_modules
+.next
+out
+.env.local
+.DS_Store
+next-env.d.ts
+
+# Generated documentation.
+#
+# The PDFs are built from the app and the builders in docs/, so the source of
+# truth is the code rather than the output. Git keeps every version of a
+# binary forever, and these are ~28 MB a rebuild — a few rounds and the repo
+# is mostly superseded sales material that no clone can avoid downloading.
+# Keep them on disk, share them from wherever sales material lives.
+docs/*.pdf
+
+# TypeScript incremental build cache. Regenerated on every typecheck, so
+# tracking it means a dirty tree after any build and a meaningless diff in
+# every commit.
+tsconfig.tsbuildinfo
+
+# Copied out of node_modules before every dev and build by
+# scripts/copy-pdf-worker.mjs. Not committed, so it can never drift from the
+# installed pdfjs-dist — a worker from a different version than the library
+# fails at runtime, which would be found by a client uploading a vaccination
+# certificate rather than by anybody here.
+public/pdf.worker.min.mjs
+
+# End-to-end test credentials and saved sessions
+.env.e2e
+.auth/
+test-results/
+playwright-report/
